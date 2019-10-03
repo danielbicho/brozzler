@@ -40,10 +40,11 @@ app = flask.Flask(__name__)
 # configure with environment variables
 SETTINGS = {
     'RETHINKDB_SERVERS': os.environ.get(
-        'BROZZLER_RETHINKDB_SERVERS', 'localhost').split(','),
+    'BROZZLER_RETHINKDB_SERVERS', 'localhost').split(','),
     'RETHINKDB_DB': os.environ.get('BROZZLER_RETHINKDB_DB', 'brozzler'),
-    'WAYBACK_BASEURL': os.environ.get(
-        'WAYBACK_BASEURL', 'http://localhost:8880/brozzler'),
+    'WAYBACK_BASEURL': os.environ.get('WAYBACK_BASEURL', 'http://localhost:8880/brozzler'),
+    'DASHBOARD_PORT': os.environ.get('DASHBOARD_PORT', '8000'),
+    'DASHBOARD_INTERFACE': os.environ.get('DASHBOARD_INTERFACE', 'localhost')
 }
 rr = doublethink.Rethinker(
         SETTINGS['RETHINKDB_SERVERS'], db=SETTINGS['RETHINKDB_DB'])
@@ -269,7 +270,6 @@ except ImportError:
     def run():
         logging.info("running brozzler-dashboard using simple flask app.run")
         app.run()
-
 def main(argv=None):
     import argparse
     import brozzler.cli
@@ -289,11 +289,13 @@ def main(argv=None):
                 '  BROZZLER_RETHINKDB_DB        rethinkdb database name '
                 '(default: brozzler)\n'
                 '  WAYBACK_BASEURL     base url for constructing wayback '
-                'links (default http://localhost:8880/brozzler)'))
+                'links (default http://localhost:8880/brozzler)\n'
+                '  DASHBOARD_PORT   brozzler-dashboard listening port (default: 8000)\n'
+                '  DASHBOARD_INTERFACE brozzler-dashboard network interface binding (default: localhost)'))
     brozzler.cli.add_common_options(arg_parser, argv)
     args = arg_parser.parse_args(args=argv[1:])
     brozzler.cli.configure_logging(args)
-    run()
+    run(port=SETTINGS.get('DASHBOARD_PORT'), host=SETTINGS.get('DASHBOARD_INTERFACE'))
 
 if __name__ == "__main__":
     main()
